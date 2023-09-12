@@ -1,0 +1,29 @@
+---
+- name: Install MariaDB package and dependencies for Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - mariadb-server
+    - python3-mysqldb
+
+- name: Configure SELinux to start MariaDB on any port
+  ansible.builtin.seboolean:
+    name: mariadb_connect_any
+    state: yes
+    persistent: yes
+  when: ansible_selinux.status == "enabled"
+
+- name: Create MariaDB configuration file
+  template:
+    src: my.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/50-server.cnf
+  notify:
+    - restart mariadb
+
+- name: Start MariaDB Service
+  service:
+    name: mariadb
+    state: started
+    enabled: yes

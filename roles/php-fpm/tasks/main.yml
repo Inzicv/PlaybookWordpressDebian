@@ -1,0 +1,31 @@
+---
+- name: Install php-fpm and deps
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - php
+    - php-fpm
+    - php-enchant
+    - php-horde-idna
+    - php-mbstring
+    - php-mysql
+    - libphp-phpmailer
+    - php-symfony-process
+    - libphp-simplepie
+    - php-xml
+
+- name: Check if www.conf exists
+  stat:
+    path: /etc/php/8.2/fpm/pool.d/www.conf
+  register: www_conf
+
+- name: Rename www.conf to www.disabled
+  command: mv /etc/php/8.2/fpm/pool.d/www.conf /etc/php/8.2/fpm/pool.d/www.disabled
+  when: www_conf.stat.exists
+
+- name: Copy php-fpm configuration
+  template:
+    src: wordpress.conf
+    dest: /etc/php/8.2/fpm/pool.d/
+  notify: restart php-fpm

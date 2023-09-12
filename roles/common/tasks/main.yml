@@ -1,0 +1,22 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - iptables
+    # Ajouter d'autres dépendances si nécessaire.
+
+- name: Reload ansible_facts
+  setup:
+
+# Cette étape est omise car Debian n'utilise pas EPEL.
+
+# Cette étape est également omise car la clé GPG pour EPEL n'est pas pertinente pour Debian.
+
+- name: Set up iptables rules
+  copy:
+    src: iptables-save
+    dest: /etc/iptables/rules.v4
+  notify:
+  - reload iptables
